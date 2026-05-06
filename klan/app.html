@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Private Vault v2.0</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f4f7fb;
+            --primary: #1a73e8;
+            --surface: #ffffff;
+            --text: #1c1b1f;
+            --shadow-deep: 10px 10px 20px #d1d9e6, -10px -10px 20px #ffffff;
+            --shadow-inset: inset 2px 2px 5px #b8b9be, inset -3px -3px 7px #ffffff;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--text);
+        }
+
+        /* Container Principale con illusione di profondità */
+        .app-container {
+            width: 90%;
+            max-width: 450px;
+            background: var(--surface);
+            box-shadow: var(--shadow-deep);
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Header Dinamico */
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h1 { font-weight: 700; font-size: 24px; margin: 0; color: var(--primary); }
+
+        /* Login Section */
+        #login-section { display: flex; flex-direction: column; gap: 20px; }
+        
+        .input-group {
+            background: var(--bg);
+            box-shadow: var(--shadow-inset);
+            padding: 15px;
+            border: none;
+            font-size: 18px;
+            text-align: center;
+            letter-spacing: 5px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        /* Bottoni Material */
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(26, 115, 232, 0.3);
+            transition: 0.3s ease;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 15px rgba(26, 115, 232, 0.4); }
+
+        /* Dashboard (Nascosta inizialmente) */
+        #main-app { display: none; opacity: 0; transform: translateY(20px); transition: 0.5s; }
+
+        /* Tabs System */
+        .tabs { display: flex; justify-content: space-around; margin-top: 20px; border-top: 1px solid #eee; padding-top: 20px; }
+        .tab-btn { background: none; border: none; color: #888; cursor: pointer; font-weight: 600; font-size: 14px; }
+        .tab-btn.active { color: var(--primary); border-bottom: 2px solid var(--primary); }
+
+        /* Cards per Post e Documenti */
+        .content-card {
+            background: #fff;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 5px solid var(--primary);
+            box-shadow: 5px 5px 15px #e6e9f0;
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+        /* Timer Circle Animation */
+        .timer-bar {
+            height: 4px;
+            background: #eee;
+            width: 100%;
+            margin-top: 10px;
+            position: relative;
+        }
+        .timer-progress {
+            height: 100%;
+            background: var(--primary);
+            width: 100%;
+            transition: width 1s linear;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container" id="vault-app">
+    <div id="login-section">
+        <div class="header">
+            <h1>Private Vault</h1>
+            <p>Authenticator Required</p>
+        </div>
+        <input type="text" id="auth-code" class="input-group" placeholder="000000" maxlength="6">
+        <button class="btn" onclick="verifyCode()">SBLOCCA ACCESSO</button>
+    </div>
+
+    <div id="main-app">
+        <div class="header">
+            <h1 id="user-title">Benvenuto, Admin</h1>
+        </div>
+        
+        <div id="content-display">
+            </div>
+
+        <div class="timer-bar"><div id="progress" class="timer-progress"></div></div>
+        <p style="font-size: 12px; text-align: center; color: #999;">Il codice scade tra poco...</p>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="showTab('vault')">VAULT</button>
+            <button class="tab-btn" onclick="showTab('profilo')">PROFILO</button>
+            <button class="tab-btn" onclick="showTab('amici')">AMICI</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function verifyCode() {
+        const code = document.getElementById('auth-code').value;
+        // Simuliamo chiamata API
+        fetch('/api/verify', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({code: code})
+        })
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('login-section').style.display = 'none';
+            const main = document.getElementById('main-app');
+            main.style.display = 'block';
+            setTimeout(() => main.style.opacity = '1', 50);
+            loadData();
+            startTimer();
+        })
+        .catch(err => alert("Codice non valido!"));
+    }
+
+    function loadData() {
+        const display = document.getElementById('content-display');
+        display.innerHTML = `
+            <div class="content-card"><strong>Post:</strong> Benvenuto nel futuro del social privato.</div>
+            <div class="content-card"><strong>Doc:</strong> piano_segreto_2026.pdf</div>
+        `;
+    }
+
+    function startTimer() {
+        let width = 100;
+        setInterval(() => {
+            width -= 1;
+            if (width < 0) width = 100; // Reset ogni 180s nella realtà
+            document.getElementById('progress').style.width = width + "%";
+        }, 1800); // Semplificato per l'effetto visivo
+    }
+
+    function showTab(tab) {
+        alert("Navigazione alla scheda: " + tab);
+        // Qui aggiungeresti la logica per cambiare i dati visualizzati
+    }
+</script>
+
+</body>
+</html>
