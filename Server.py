@@ -3,7 +3,7 @@ import time
 import hashlib
 import os
 
-app = Flask(__name__)
+Server = Flask(__name__)
 app.secret_key = "vault_ultra_secret_2026"
 
 def get_totp_code():
