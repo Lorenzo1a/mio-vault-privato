@@ -3,8 +3,9 @@ import time
 import hashlib
 import os
 
-app = Flask(__name__)
-app.secret_key = "vault_ultra_secret_2026"
+# Forza Flask a cercare la cartella templates nel percorso corretto
+template_dir = os.path.abspath('templates')
+app = Flask(__name__, template_folder=template_dir)
 
 def get_totp_code():
     # Finestra di 180 secondi
